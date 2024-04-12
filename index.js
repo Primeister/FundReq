@@ -5,7 +5,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-let cars = [car1];
+let cars = ["cars"];
 
 const port = process.env.PORT || 3000;
 
