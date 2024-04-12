@@ -5,10 +5,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+cars = [car1];
+
 const port = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-  res.send('Hello, World!');
+  res.send(cars);
 });
 
 app.listen(port, () => {
