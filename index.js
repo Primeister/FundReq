@@ -8,7 +8,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const dbPath = path.resolve(__dirname, "database.db");
 
 let cars = ["cars"];
 
