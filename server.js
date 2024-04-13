@@ -14,6 +14,12 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+let cars = ["cars"];
+
+app.get('/', (req, res) => {
+  res.send(cars);
+});
+
 // Route to handle user registration
 app.post("/register", (req, res) => {
     const { username, name, surname, email, password, userType } = req.body;
