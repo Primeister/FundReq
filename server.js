@@ -17,7 +17,14 @@ app.use(express.json());
 let cars = ["cars"];
 
 app.get('/', (req, res) => {
-  res.send(cars);
+  db.all("SELECT * FROM applicants", (err, rows) => {
+        if (err) {
+            console.error("Error retrieving profiles:", err);
+            res.status(500).json({ error: "Error retrieving profiles" });
+        } else {
+            res.json(rows);
+        }
+    });;
 });
 
 // Route to handle user registration
