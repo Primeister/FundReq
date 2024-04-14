@@ -53,11 +53,11 @@ app.get("/login", (req, res) => {
 
 // Route to handle user login
 app.post("/login", (req, res) => {
-    const { email, password } = req.body;
+    const { username, password, userType } = req.body;
 
     // Check if the email and password match a user in the database
-    const sql = "SELECT * FROM users WHERE email = ? AND password = ?";
-    const values = [email, password];
+    const sql = `SELECT * FROM ${userType} WHERE username = ? AND password = ?`;
+    const values = [username, password];
 
     db.get(sql, values, (err, row) => {
         if (err) {
@@ -65,7 +65,7 @@ app.post("/login", (req, res) => {
             res.status(500).json({ error: "Error logging in" });
         } else if (!row) {
             // No user found with the provided email and password
-            res.status(401).json({ error: "Invalid email or password" });
+            res.status(401).json({ error: "Invalid username or password" });
         } else {
             // User authenticated successfully
             res.status(200).json({ message: "Login successful", userId: row.id });
