@@ -45,17 +45,7 @@ app.post("/register", (req, res) => {
     });
 });
 
-// Route to retrieve profiles
-app.get("/profiles", (req, res) => {
-    db.all("SELECT * FROM profiles", (err, rows) => {
-        if (err) {
-            console.error("Error retrieving profiles:", err);
-            res.status(500).json({ error: "Error retrieving profiles" });
-        } else {
-            res.json(rows);
-        }
-    });
-});
+
 // Route to serve the login page
 app.get("/login", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "login.html"));
