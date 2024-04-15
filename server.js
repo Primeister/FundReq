@@ -86,33 +86,31 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
     let { username, password, userType } = req.body;
 
-    //hashing the password for security reasons
-    bcrypt.genSalt(10, (err, salt) => {
-        bcrypt.hash(password, salt, (err, hash) => {
-            if(err){
-                console.log(err);
-            }
-            else{
-                password = hash;
-                console.log(password);
-            }
-        });
-    });
-
-    // Check if the email and password match a user in the database
-    const sql = `SELECT * FROM ${userType} WHERE username = ? AND password = ?`;
-    const values = [username, password];
+    // Check if the username exists in the database
+    const sql = `SELECT * FROM ${userType} WHERE username = ?`;
+    const values = [username];
 
     db.get(sql, values, (err, row) => {
         if (err) {
             console.error("Error logging in:", err);
             res.status(500).json({ error: "Error logging in" });
         } else if (!row) {
-            // No user found with the provided email and password
+            // No user found with the provided username
             res.status(401).json({ error: "Invalid username or password" });
         } else {
-            // User authenticated successfully
-            res.status(200).json({ message: "Login successful", userId: row.id });
+            // Compare the hashed password stored in the database with the hashed version of the password provided by the user
+            bcrypt.compare(password, row.password, (err, result) => {
+                if (err) {
+                    console.error("Error comparing passwords:", err);
+                    res.status(500).json({ error: "Error logging in" });
+                } else if (result) {
+                    // Passwords match, user authenticated successfully
+                    res.status(200).json({ message: "Login successful", userId: row.id });
+                } else {
+                    // Passwords don't match
+                    res.status(401).json({ error: "Invalid username or password" });
+                }
+            });
         }
     });
 });
