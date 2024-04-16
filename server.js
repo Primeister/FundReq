@@ -27,6 +27,17 @@ app.get('/', (req, res) => {
     });;
 });
 
+app.get('/fundManagers', (req, res) => {
+  db.all("SELECT * FROM funders", (err, rows) => {
+        if (err) {
+            console.error("Error retrieving profiles:", err);
+            res.status(500).json({ error: "Error retrieving profiles" });
+        } else {
+            res.json(rows);
+        }
+    });;
+});
+
 // Route to handle user registration
 app.post("/register",(req, res) => {
     let { username, name, surname, email, password, userType } = req.body;
