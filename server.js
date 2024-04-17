@@ -127,18 +127,7 @@ app.post("/login", (req, res) => {
                         res.status(500).json({ error: "Error logging in" });
                     } else if (result) {
                         // Passwords match, user authenticated successfully
-                        let name = `SELECT username from ${table} where id = ${row.id}` ;
-                    
-                        db.get(name, (err, row) => {
-                            if (err) {
-                                console.error("Error logging in:", err);
-                                res.status(500).json({ error: "Error logging in" });
-                            }
-                            else{
-                                username = row ;
-                            }
-                        });
-                        res.status(200).json({ message: "Login successful", userId: row.id, userType: table , "username":username });
+                        res.status(200).json({ message: "Login successful", userId: row.id, userType: table, username: row.username });
                     } else {
                         // Passwords don't match
                         res.status(401).json({ error: "Invalid username or password" });
