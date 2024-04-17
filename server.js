@@ -141,6 +141,24 @@ app.post("/login", (req, res) => {
     checkLogin(tables[0]);
 });
 
+// Define a route to handle the update operation
+app.put('/update/status/:id', (req, res) => {
+    const id = req.params.id;
+    const newValue = req.body.newValue; // Assuming the new value is passed in the request body 
+
+    // Run the update query
+    const sql = `UPDATE funders SET status = ? WHERE id = ?`;
+    db.run(sql, [newValue, id], function(err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({
+            message: `Field updated successfully`,
+            changes: this.changes // Number of rows affected
+        });
+    });
+});
+
 
 // Route to retrieve profiles
 app.get("/profiles", (req, res) => {
