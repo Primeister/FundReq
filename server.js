@@ -95,11 +95,11 @@ app.get("/login", (req, res) => {
 
 // Route to handle user login
 app.post("/login", (req, res) => {
-    let { username, password, userType } = req.body;
+    let { email, password, userType } = req.body;
 
     // Check if the username exists in the database
-    const sql = `SELECT * FROM ${userType} WHERE username = ?`;
-    const values = [username];
+    const sql = `SELECT * FROM ${userType} WHERE email = ?`;
+    const values = [email];
 
     db.get(sql, values, (err, row) => {
         if (err) {
