@@ -17,7 +17,7 @@ app.use(express.json());
 let cars = ["cars"];
 
 app.get('/', (req, res) => {
-  db.all("SELECT * FROM applicants where status = null ", (err, rows) => {
+  db.all("SELECT * FROM applicants", (err, rows) => {
         if (err) {
             console.error("Error retrieving profiles:", err);
             res.status(500).json({ error: "Error retrieving profiles" });
@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/fundManagers', (req, res) => {
-  db.all("SELECT * FROM funders where status = null ", (err, rows) => {
+  db.all("SELECT * FROM funders where status IS NULL", (err, rows) => {
         if (err) {
             console.error("Error retrieving profiles:", err);
             res.status(500).json({ error: "Error retrieving profiles" });
