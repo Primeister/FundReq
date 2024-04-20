@@ -17,7 +17,7 @@ app.use(express.json());
 let cars = ["cars"];
 
 app.get('/', (req, res) => {
-  db.all("SELECT * FROM applicants", (err, rows) => {
+  db.all("SELECT * FROM funders", (err, rows) => {
         if (err) {
             console.error("Error retrieving profiles:", err);
             res.status(500).json({ error: "Error retrieving profiles" });
