@@ -153,7 +153,7 @@ app.put('/update/status/:id', (req, res) => {
             return res.status(500).json({ error: err.message });
         }
         res.json({
-            message: `Field updated successfully`,
+            message: "Field updated successfully",
             changes: this.changes // Number of rows affected
         });
     });
