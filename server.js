@@ -44,7 +44,7 @@ app.get('/fundManagers/:id', (req, res) => {
 
     // Run the update query
     const sql = `SELECT * FROM funders WHERE email = ?`;
-    db.run(sql, id, function(err) {
+    db.get(sql, [id], function(err) {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
