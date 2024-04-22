@@ -48,8 +48,9 @@ app.get('/fundManagers/:id', (req, res) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        res.json({
+      else{
             res.json(rows);
+          }
         });
     });
 
