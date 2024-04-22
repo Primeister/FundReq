@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
         } else {
             res.json(rows);
         }
-    });;
+    });
 });
 
 app.get('/fundManagers', (req, res) => {
@@ -35,7 +35,7 @@ app.get('/fundManagers', (req, res) => {
         } else {
             res.json(rows);
         }
-    });;
+    });
 });
 
 app.get('/fundManagers/:id', (req, res) => {
@@ -44,7 +44,7 @@ app.get('/fundManagers/:id', (req, res) => {
 
     // Run the update query
     const sql = `SELECT * FROM funders WHERE email = ?`;
-    db.get(sql, [id], function(err) {
+    db.get(sql, [id], (err, row) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
