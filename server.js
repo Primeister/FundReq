@@ -38,21 +38,7 @@ app.get('/fundManagers', (req, res) => {
     });;
 });
 
-app.get('/fundManagers/:id', (req, res) => {
-    const id = req.params.id;
-     // Assuming the new value is passed in the request body 
 
-    // Run the update query
-    const sql = `select funders WHERE email = ?`;
-    db.run(sql, [id], function(err) {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({
-            res.json(rows);
-        });
-    });
-});
 
 // Route to handle user registration
 app.post("/register",(req, res) => {
