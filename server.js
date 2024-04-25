@@ -39,20 +39,37 @@ app.get('/fundManagers', (req, res) => {
 });
 
 app.get('/fundManagers/:id', (req, res) => {
-    const id = req.params.id;
-     // Assuming the new value is passed in the request body 
+    const id = req.params.id;
+    // Assuming the new value is passed in the request body 
 
-    // Run the update query
-    const sql = `SELECT * FROM funders WHERE email = ?`;
-    db.get(sql, [id], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+    // Run the update query
+    const sql = `SELECT * FROM funders WHERE email = ?`;
+    db.get(sql, [id], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
       else{
-            res.json(rows);
+            res.json(rows);
           }
-        });
-    });
+        });
+    });
+
+app.post('/fundManagers/advert/post/:id', (req, res) => {
+        const id = req.params.id;
+        let {name, type, description, requirements} = req.body;
+        const values = [name, type, description, requirements, id];
+    
+        // Run the update query
+        const sql = `INSERT INTO FundingOpportunity (FundingName, FundingType, FundingDescription, Requirements, FundManager) VALUES (?, ?, ?, ?, ?)`;
+        db.run(sql, values, function(err) {
+            if (err) {
+                console.error("Error posting funding opportunity:", err);
+                res.status(500).json({ error: "Error posting funding opportunity" });
+            } else {
+                res.status(201).json({ message: "Funding opportunity posted successfully"});
+            }
+            });
+         });
 
 
 
