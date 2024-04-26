@@ -211,6 +211,25 @@ app.get("/profiles", (req, res) => {
     });
 });
 
+// Route to retrieve information about funding opportunities
+app.get('/fundingOpportunities/:FundManager', (req, res) => {
+    const fundManager= req.params.FundManager;
+
+    // SQL query to retrieve funding opportunities associated with the specified fund manager
+    const sql = `SELECT * FROM FundingOpportunity WHERE FundManager=?`;
+
+    // Execute the SQL query
+    db.all(sql, [fundManager], (err, rows) => {
+        if (err) {
+            console.error("Error retrieving funding opportunities for fund manager:", err);
+            res.status(500).json({ error: "Error retrieving data" });
+        } else {
+            // If data found, send the response
+            res.json(rows);
+        }
+    });
+});
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port${PORT}`);
