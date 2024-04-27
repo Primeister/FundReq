@@ -235,3 +235,16 @@ app.listen(PORT, () => {
     console.log(`Server is running on port${PORT}`);
 });
 
+app.get('/getOpportunity/:type', (req, res) => {
+    const type = req.params.type;
+    const query = 'SELECT * FROM FundingOpportunity WHERE FundingType = ?';
+
+    db.all(query, [type], (err, rows) => {
+        if (err) {
+            console.error("Error retrieving funding opportunities:", err);
+            res.status(500).json({ error: "Error retrieving funding opportunities" });
+        } else {
+            res.json(rows);
+        }
+    });
+});
