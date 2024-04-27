@@ -171,7 +171,7 @@ app.post("/login", (req, res) => {
                 }
             } else {
                 // User found, send success response
-                res.status(200).json({ message: "User logged in successfully", user: row });
+                res.status(200).json({ message: "User logged in successfully", user: row, userType: table});
             }
         });
     }
