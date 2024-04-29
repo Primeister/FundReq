@@ -72,6 +72,40 @@ app.post('/fundManagers/advert/post/:id', (req, res) => {
          });
 
 
+//Route to handle aplication form         
+app.post('/application/post', (req, res) => {
+    const id = req.params.id;
+    const status = "processing";
+   
+    const f_name = "none"
+   /*
+    const surname = "v ";
+    const firstname = "m";
+    const mobile = "011";
+    const email ="@g";
+    const id_number = "0000"
+    const dob= "2000";
+    const citizenship = "SA" ;*/
+    let { surname, firstname, mobile, email, id_number, dob, citizenship, funding_name } = req.body;
+    const values = [surname, firstname, mobile, email, id_number, dob, citizenship, status , funding_name ];
+
+    // Run the update query
+    const sql = `INSERT INTO form (surname , firstName, mobile, email, id_number, dob, citizenship , status , funding_name) VALUES (?, ?, ?, ?, ?, ?, ? ,? , ?)`;
+    db.run(sql, values, function(err) {
+        if (err) {
+            console.error("Error inserting data into database:", err);
+            res.status(500).json({ error: "Error inserting data into database" });
+        } else {
+            res.status(201).json({ message: `Data inserted successfully ${values.firstname}` });
+        }
+        });
+     });
+
+
+
+
+
+
 
 // Route to handle user registration
 app.post("/register",(req, res) => {
