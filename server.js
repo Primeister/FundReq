@@ -299,3 +299,32 @@ app.get('/getOpportunity/:type', (req, res) => {
         }
     });
 });
+
+app.delete('/fundingOpportunities/:funding_name', (req, res) => {
+    const fundingOppName = req.params.funding_name;
+
+    // Delete applications associated with the funding opportunity
+    const deleteApplicationsSQL = `DELETE FROM form WHERE funding_name=?`;
+
+    db.run(deleteApplicationsSQL, [fundingOppName], (err) => {
+        if (err) {
+            console.error("Error deleting applications for funding opportunity");
+            res.status(500).json({ error: "Error deleting applications" });
+            return;
+        }
+
+        // Delete the funding opportunity
+        const deleteFundingOppSQL = `DELETE FROM funding_opportunities WHERE funding_name=?`;
+
+        db.run(deleteFundingOppSQL, [fundingOppName], (err) => {
+            if (err) {
+                console.error("Error deleting funding opportunity");
+                res.status(500).json({ error: "Error deleting funding opportunity" });
+                return;
+            }
+
+            res.json({ message: "Funding opportunity and associated applications deleted successfully" });
+        });
+    });
+});
+
