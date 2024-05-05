@@ -301,7 +301,7 @@ app.get('/getOpportunity/:type', (req, res) => {
 });
 
 // Route to remove a funding opportunity and its associated applications
-app.delete('/fundingOpportunities/:id', (req, res) => {
+app.delete('/deletefundOpp/:id', (req, res) => {
     const id = req.params.id;
 
     // Delete the funding opportunity from the FundingOpportunity table
