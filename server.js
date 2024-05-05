@@ -299,3 +299,34 @@ app.get('/getOpportunity/:type', (req, res) => {
         }
     });
 });
+
+// Route to remove a funding opportunity and its associated applications
+app.delete('/fundingOpportunities/:id', (req, res) => {
+    const id = req.params.id;
+
+    // Delete the funding opportunity from the FundingOpportunity table
+    const deleteFundingOpportunityQuery = 'DELETE FROM FundingOpportunity WHERE id = ?';
+
+    db.run(deleteFundingOpportunityQuery, [id], function(err) {
+        if (err) {
+            console.error("Error deleting funding opportunity:", err);
+            res.status(500).json({ error: "Error deleting funding opportunity" });
+            return;
+        }
+
+        // Delete associated applications from the form table
+        const deleteApplicationsQuery = 'DELETE FROM form WHERE funding_name = ?';
+
+        db.run(deleteApplicationsQuery, [id], function(err) {
+            if (err) {
+                console.error("Error deleting associated applications:", err);
+                res.status(500).json({ error: "Error deleting associated applications" });
+                return;
+            }
+
+            // Success message if both deletion operations are successful
+            res.json({ message: "Funding opportunity and associated applications deleted successfully" });
+        });
+    });
+});
+
