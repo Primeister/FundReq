@@ -281,6 +281,44 @@ app.get('/applications/:funding_name', (req,res)=>{
     });
 });
 
+app.get('/applications/:funding_name/:applicant_email/accept', (req,res)=>{
+    const fundingOppName = req.params.funding_name;
+    const applicantEmail = req.params.applicant_email;
+
+
+    const sql = `UPDATE form SET status="Approved" WHERE funding_name=? AND email=?`;
+    //execute the sql query
+    db.all(sql, [fundingOppName, applicantEmail], (err, rows)=>{
+        if(err){
+            console.error("Error retrieving applications for funding opportunity");
+            res.status(500).json({error:"Error retrieving data"});
+        }else{
+            //if data found, send the response
+            res.json(rows);
+            console.log("accepted");
+        }
+    });
+});
+
+app.get('/applications/:funding_name/:applicant_email/reject', (req,res)=>{
+    const fundingOppName = req.params.funding_name;
+    const applicantEmail = req.params.applicant_email;
+
+
+    const sql = `UPDATE form SET status="Rejected" WHERE funding_name=? AND email=?`;
+    //execute the sql query
+    db.all(sql, [fundingOppName, applicantEmail], (err, rows)=>{
+        if(err){
+            console.error("Error retrieving applications for funding opportunity");
+            res.status(500).json({error:"Error retrieving data"});
+        }else{
+            //if data found, send the response
+            res.json(rows);
+            console.log("rejected");
+        }
+    });
+});
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port${PORT}`);
