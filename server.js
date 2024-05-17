@@ -368,3 +368,36 @@ app.delete('/deletefundOpp/:id', (req, res) => {
     });
 });
 
+// Route to modify a funding opportunity
+app.put('/modifyFundOpp/:name', (req, res) => {
+    const fundingOppName = req.params.name;
+    const { aspect, newValue } = req.body; // Assuming the aspect and new value are passed in the request body
+
+    // Run the update query based on the specified aspect
+    let sql;
+    switch (aspect) {
+        case 'name':
+            sql = `UPDATE FundingOpportunity SET FundingName = ? WHERE FundingName = ?`;
+            break;
+        case 'description':
+            sql = `UPDATE FundingOpportunity SET FundingDescription = ? WHERE FundingName = ?`;
+            break;
+        case 'requirements':
+            sql = `UPDATE FundingOpportunity SET Requirements = ? WHERE FundingName = ?`;
+            break;
+        case 'deadline':
+            sql = `UPDATE FundingOpportunity SET Deadline = ? WHERE FundingName = ?`;
+            break;
+        default:
+            return res.status(400).json({ error: 'Invalid aspect provided' });
+    }
+
+    db.run(sql, [newValue, fundingOppName], function(err) {
+        if (err) {
+            console.error("Error modifying funding opportunity:", err);
+            res.status(500).json({ error: "Error modifying funding opportunity" });
+        } else {
+            res.json({ message: "Funding opportunity modified successfully" });
+        }
+    });
+});
