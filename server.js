@@ -60,7 +60,7 @@ app.post('/fundManagers/advert/post/:id', (req, res) => {
         const values = [name, type, description, requirements, deadline, id, amount];
     
         // Run the update query
-        const sql = `INSERT INTO FundingOpportunity (FundingName, FundingType, FundingDescription, Requirements, Deadline, FundManager, Amount) VALUES (?, ?, ?, ?, ?, ?)`;
+        const sql = `INSERT INTO FundingOpportunity (FundingName, FundingType, FundingDescription, Requirements, Deadline, FundManager, Amount) VALUES (?, ?, ?, ?, ?, ?, ?)`;
         db.run(sql, values, function(err) {
             if (err) {
                 console.error("Error posting funding opportunity:", err);
