@@ -407,16 +407,22 @@ app.put('/modifyFundOpp/:name', (req, res) => {
 app.get('/notifications/:fundManagerEmail', (req, res) => {
     const fundManagerEmail = req.params.fundManagerEmail;
 
+    // Log the received email
+    console.log(`Retrieving notifications for: ${fundManagerEmail}`);
+
     const sql = `SELECT * FROM Notifications WHERE fundManagerEmail = ? ORDER BY timestamp DESC`;
     db.all(sql, [fundManagerEmail], (err, rows) => {
         if (err) {
             console.error("Error retrieving notifications:", err);
             res.status(500).json({ error: "Error retrieving notifications" });
         } else {
+            // Log the retrieved rows
+            console.log(`Notifications retrieved: ${JSON.stringify(rows)}`);
             res.json(rows);
         }
     });
 });
+
 
 // Endpoint to add a new notification
 app.post('/notifications/add', (req, res) => {
