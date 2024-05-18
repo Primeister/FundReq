@@ -338,7 +338,7 @@ app.get('/getOpportunity/:type', (req, res) => {
     });
 });
 
-// Route to remove a funding opportunity and its associated applications
+// Route to delete a funding opportunity
 app.delete('/deletefundOpp/:id', (req, res) => {
     const id = req.params.id;
 
@@ -351,20 +351,27 @@ app.delete('/deletefundOpp/:id', (req, res) => {
             res.status(500).json({ error: "Error deleting funding opportunity" });
             return;
         }
+        // Success message if deletion operation is successful
+        res.json({ message: "Funding opportunity deleted successfully" });
+    });
+});
 
-        // Delete associated applications from the form table
-        const deleteApplicationsQuery = 'DELETE FROM form WHERE funding_name = ?';
+// Route to delete associated applicants of a funding opportunity
+app.delete('/deleteApplicants/:fundingOppId', (req, res) => {
+    const fundingOppId = req.params.fundingOppId;
 
-        db.run(deleteApplicationsQuery, [id], function(err) {
-            if (err) {
-                console.error("Error deleting associated applications:", err);
-                res.status(500).json({ error: "Error deleting associated applications" });
-                return;
-            }
+    // Delete associated applications from the form table based on the funding opportunity id
+    const deleteApplicationsQuery = 'DELETE FROM form WHERE fundingOppId = ?';
 
-            // Success message if both deletion operations are successful
-            res.json({ message: "Funding opportunity and associated applications deleted successfully" });
-        });
+    db.run(deleteApplicationsQuery, [fundingOppId], function(err) {
+        if (err) {
+            console.error("Error deleting associated applications:", err);
+            res.status(500).json({ error: "Error deleting associated applications" });
+            return;
+        }
+
+        // Success message if deletion operation is successful
+        res.json({ message: "Associated applicants deleted successfully" });
     });
 });
 
