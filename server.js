@@ -72,40 +72,73 @@ app.post('/fundManagers/advert/post/:id', (req, res) => {
          });
 
 
-//Route to handle aplication form         
-app.post('/application/post', (req, res) => {
-    const id = req.params.id;
-    const status = "processing";
+//Route to handle aplication form 
+//original route        
+// app.post('/application/post', (req, res) => {
+//     const id = req.params.id;
+//     const status = "processing";
    
-    const f_name = "none"
-   /*
-    const surname = "v ";
-    const firstname = "m";
-    const mobile = "011";
-    const email ="@g";
-    const id_number = "0000"
-    const dob= "2000";
-    const citizenship = "SA" ;*/
-    let { surname, firstname, mobile, email, id_number, dob, citizenship, funding_name } = req.body;
-    const values = [surname, firstname, mobile, email, id_number, dob, citizenship, status , funding_name ];
+//     const f_name = "none"
+//    /*
+//     const surname = "v ";
+//     const firstname = "m";
+//     const mobile = "011";
+//     const email ="@g";
+//     const id_number = "0000"
+//     const dob= "2000";
+//     const citizenship = "SA" ;*/
+//     let { surname, firstname, mobile, email, id_number, dob, citizenship, funding_name } = req.body;
+//     const values = [surname, firstname, mobile, email, id_number, dob, citizenship, status , funding_name ];
 
-    // Run the update query
-    const sql = `INSERT INTO form (surname , firstName, mobile, email, id_number, dob, citizenship , status , funding_name) VALUES (?, ?, ?, ?, ?, ?, ? ,? , ?)`;
-    db.run(sql, values, function(err) {
+//     // Run the update query
+//     const sql = `INSERT INTO form (surname , firstName, mobile, email, id_number, dob, citizenship , status , funding_name) VALUES (?, ?, ?, ?, ?, ?, ? ,? , ?)`;
+//     db.run(sql, values, function(err) {
+//         if (err) {
+//             console.error("Error inserting data into database:", err);
+//             res.status(500).json({ error: "Error inserting data into database" });
+//         } else {
+//             res.status(201).json({ message: `Data inserted successfully ${values.firstname}` });
+//         }
+//         });
+//      });
+
+// Add a new notification when an application is submitted
+app.post('/application/post', (req, res) => {
+    const { surname, firstname, mobile, email, id_number, dob, citizenship, funding_name } = req.body;
+    const status = "processing";
+
+    const values = [surname, firstname, mobile, email, id_number, dob, citizenship, status, funding_name];
+
+    const sqlInsert = `INSERT INTO form (surname, firstName, mobile, email, id_number, dob, citizenship, status, funding_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    db.run(sqlInsert, values, function(err) {
         if (err) {
             console.error("Error inserting data into database:", err);
             res.status(500).json({ error: "Error inserting data into database" });
         } else {
-            res.status(201).json({ message: `Data inserted successfully ${values.firstname}` });
+            // Get the fund manager's email
+            const sqlFundManager = `SELECT FundManager FROM FundingOpportunity WHERE FundingName = ?`;
+            db.get(sqlFundManager, [funding_name], (err, row) => {
+                if (err) {
+                    console.error("Error retrieving fund manager:", err);
+                    res.status(500).json({ error: "Error retrieving fund manager" });
+                } else {
+                    const fundManagerEmail = row.FundManager;
+                    const notificationValues = [fundManagerEmail, funding_name, firstname + ' ' + surname];
+
+                    const sqlNotification = `INSERT INTO Notifications (fundManagerEmail, fundingOpportunityName, applicantName) VALUES (?, ?, ?)`;
+                    db.run(sqlNotification, notificationValues, function(err) {
+                        if (err) {
+                            console.error("Error inserting notification into database:", err);
+                            res.status(500).json({ error: "Error inserting notification into database" });
+                        } else {
+                            res.status(201).json({ message: `Data inserted successfully for ${firstname}` });
+                        }
+                    });
+                }
+            });
         }
-        });
-     });
-
-
-
-
-
-
+    });
+});
 
 // Route to handle user registration
 app.post("/register",(req, res) => {
@@ -408,3 +441,20 @@ app.put('/modifyFundOpp/:name', (req, res) => {
         }
     });
 });
+
+// Endpoint to fetch notifications for a specific fund manager
+app.get('/notifications/:fundManagerEmail', (req, res) => {
+    const fundManagerEmail = req.params.fundManagerEmail;
+
+    const sql = `SELECT * FROM Notifications WHERE fundManagerEmail = ? ORDER BY timestamp DESC`;
+    db.all(sql, [fundManagerEmail], (err, rows) => {
+        if (err) {
+            console.error("Error retrieving notifications:", err);
+            res.status(500).json({ error: "Error retrieving notifications" });
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
+
