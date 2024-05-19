@@ -226,6 +226,23 @@ app.put('/update/status/:id', (req, res) => {
      });
 });
 
+// Route to retrieve funder information by ID
+app.get('/funder/:id', (req, res) => {
+    const id = req.params.id;
+    const sql = `SELECT * FROM funders WHERE id = ?`;
+    
+    db.get(sql, [id], (err, row) => {
+        if (err) {
+            console.error("Error retrieving funder information:", err);
+            res.status(500).json({ error: "Error retrieving funder information" });
+        } else if (!row) {
+            res.status(404).json({ error: "Funder not found" });
+        } else {
+            res.json(row);
+        }
+    });
+});
+
 
 // Route to retrieve profiles
 app.get("/profiles", (req, res) => {
