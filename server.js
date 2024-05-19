@@ -226,9 +226,25 @@ app.put('/update/status/:id', (req, res) => {
      });
 });
 
+app.put('/update/total/amount/:id', (req, res) => {
+     const id = req.params.id;
+      const newValue = req.body.amount; // Assuming the new value is passed in the request body 
+
+    // Run the update query
+ const sql = `UPDATE funders SET Funds = ? WHERE email = ?`;
+    db.run(sql, [newValue, id], function(err) {
+     if (err) {
+        return res.status(500).json({ error: err.message });
+     }
+     res.json({
+         message: "Field updated successfully", changes: this.changes // Number of rows affected
+     });
+     });
+});
+
 app.put('/update/amount/:FundingName', (req, res) => {
      const fundingName = req.params.id;
-      const newValue = req.body.newValue; // Assuming the new value is passed in the request body 
+      const newValue = req.body.amount; // Assuming the new value is passed in the request body 
 
     // Run the update query
  const sql = `UPDATE FundingOpportunity SET Amount = ? WHERE FundingName = ?`;
