@@ -308,6 +308,23 @@ app.get('/fundingOpportunities/:FundManager', (req, res) => {
     });
 });
 
+//endpoint to retrieve a fund manager's information using the funding opportunity they manage
+app.get('/fundManager/:fundingOppName', (req, res) =>{
+    const fundingOppName = req.params.fundingOppName;
+
+    const sql = `SELECT FundManager FROM FundingOpportunity WHERE FundingName = ?`;
+    //execute the sql query
+    db.all(sql, [fundingOppName], (err, rows)=>{
+        if(err){
+            console.error("Error retrieving fund manager information");
+            res.status(500).json({error:"Error retrieving data"});
+        }else{
+            //if data found, send the response
+            res.json(rows);
+        }
+    });
+});
+
 // Route to retrieve information about applications
 app.get('/applications/:funding_name', (req,res)=>{
     const fundingOppName = req.params.funding_name;
