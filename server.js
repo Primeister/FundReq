@@ -27,11 +27,27 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/fundManagers', (req, res) => {
+app.get('/fundManagerss', (req, res) => {
   db.all("SELECT * FROM funders where status IS NULL", (err, rows) => {
         if (err) {
             console.error("Error retrieving profiles:", err);
             res.status(500).json({ error: "Error retrieving profiles" });
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
+app.get('/fundManagers', (req, res) => {
+    let status = "pending";
+    const sql = `SELECT * FROM funders WHERE status = ?`;
+    
+    db.get(sql, [status], (err, rows) => {
+        if (err) {
+            console.error("Error retrieving funder information:", err);
+            res.status(500).json({ error: "Error retrieving funder information" });
+        } else if (!rows) {
+            res.status(404).json({ error: "Funders not found" });
         } else {
             res.json(rows);
         }
