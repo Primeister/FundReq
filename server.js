@@ -520,66 +520,63 @@ app.post('/notifications/add', (req, res) => {
 
 // Endpoint to retrieve reporting data
 app.get('/reporting', (req, res) => {
-    const totalFundsQuery = `SELECT SUM(Amount) AS totalFunds FROM FundingOpportunity`;
-    const totalApplicationsQuery = `SELECT COUNT(*) AS totalApplications FROM form`;
-    const statusCountsQuery = `SELECT status, COUNT(*) AS count FROM form GROUP BY status`;
-    const fundsUsageQuery = `SELECT FundingType, SUM(Amount) AS amount FROM FundingOpportunity GROUP BY FundingType`;
-    const rejectedApplicationsQuery = `SELECT COUNT(*) AS rejectedApplications FROM form WHERE status = 'Rejected'`;
+    const fundsQuery = `SELECT id, FundManager FROM FundingOpportunity`;
+    const statusCountsQuery = `SELECT funding_name, status, COUNT(*) AS count FROM form WHERE funding_name IN (SELECT FundingName FROM FundingOpportunity) GROUP BY funding_name, status`;
 
     let reportingData = {};
 
-    // Retrieve total funds
-    db.get(totalFundsQuery, (err, row) => {
+    // Retrieve funds managed by each fund manager
+    db.all(fundsQuery, (err, rows) => {
         if (err) {
-            console.error("Error retrieving total funds:", err);
-            res.status(500).json({ error: "Error retrieving total funds" });
+            console.error("Error retrieving fund managers:", err);
+            res.status(500).json({ error: "Error retrieving fund managers" });
             return;
         }
-        reportingData.totalFunds = row.totalFunds;
+        
+        // Loop through each fund manager's funding opportunities
+        rows.forEach(row => {
+            const fundManager = row.FundManager;
+            const fundingOpportunityId = row.id;
 
-        // Retrieve total applications
-        db.get(totalApplicationsQuery, (err, row) => {
-            if (err) {
-                console.error("Error retrieving total applications:", err);
-                res.status(500).json({ error: "Error retrieving total applications" });
-                return;
-            }
-            reportingData.totalApplications = row.totalApplications;
+            // Initialize reporting data for the current fund manager
+            reportingData[fundManager] = {
+                totalApplications: 0,
+                statusCounts: {}
+            };
 
-            // Retrieve status counts
-            db.all(statusCountsQuery, (err, rows) => {
+            // Retrieve total applications for each funding opportunity
+            const totalApplicationsQuery = `SELECT COUNT(*) AS count FROM form WHERE funding_name = ?`;
+            db.get(totalApplicationsQuery, [fundingOpportunityId], (err, row) => {
                 if (err) {
-                    console.error("Error retrieving application status counts:", err);
-                    res.status(500).json({ error: "Error retrieving application status counts" });
+                    console.error("Error retrieving total applications:", err);
+                    res.status(500).json({ error: "Error retrieving total applications" });
                     return;
                 }
-                reportingData.statusCounts = rows;
+                reportingData[fundManager].totalApplications = row.count;
+            });
 
-                // Retrieve funds usage by type
-                db.all(fundsUsageQuery, (err, rows) => {
-                    if (err) {
-                        console.error("Error retrieving funds usage data:", err);
-                        res.status(500).json({ error: "Error retrieving funds usage data" });
-                        return;
+            // Retrieve status counts for each funding opportunity
+            db.all(statusCountsQuery, (err, rows) => {
+                if (err) {
+                    console.error("Error retrieving status counts:", err);
+                    res.status(500).json({ error: "Error retrieving status counts" });
+                    return;
+                }
+                rows.forEach(statusRow => {
+                    if (!reportingData[fundManager].statusCounts[statusRow.status]) {
+                        reportingData[fundManager].statusCounts[statusRow.status] = 0;
                     }
-                    reportingData.fundsUsage = rows;
-
-                    // Retrieve count of rejected applications
-                    db.get(rejectedApplicationsQuery, (err, row) => {
-                        if (err) {
-                            console.error("Error retrieving rejected applications count:", err);
-                            res.status(500).json({ error: "Error retrieving rejected applications count" });
-                            return;
-                        }
-                        reportingData.rejectedApplications = row.rejectedApplications;
-
-                        // Send the aggregated reporting data
-                        res.json(reportingData);
-                    });
+                    reportingData[fundManager].statusCounts[statusRow.status] += statusRow.count;
                 });
+
+                // If this is the last funding opportunity for this fund manager, send the aggregated data
+                if (Object.keys(reportingData).length === rows.length) {
+                    res.json(reportingData);
+                }
             });
         });
     });
 });
+
 
 
