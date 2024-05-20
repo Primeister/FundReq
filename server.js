@@ -517,3 +517,57 @@ app.post('/notifications/add', (req, res) => {
         }
     });
 });
+
+// Endpoint to retrieve reporting data
+app.get('/reporting', (req, res) => {
+    const totalFundsQuery = `SELECT SUM(Amount) AS totalFunds FROM FundingOpportunity`;
+    const totalApplicationsQuery = `SELECT COUNT(*) AS totalApplications FROM form`;
+    const statusCountsQuery = `SELECT status, COUNT(*) AS count FROM form GROUP BY status`;
+    const fundsUsageQuery = `SELECT FundingType, SUM(Amount) AS amount FROM FundingOpportunity GROUP BY FundingType`;
+
+    let reportingData = {};
+
+    // Retrieve total funds
+    db.get(totalFundsQuery, (err, row) => {
+        if (err) {
+            console.error("Error retrieving total funds:", err);
+            res.status(500).json({ error: "Error retrieving total funds" });
+            return;
+        }
+        reportingData.totalFunds = row.totalFunds;
+
+        // Retrieve total applications
+        db.get(totalApplicationsQuery, (err, row) => {
+            if (err) {
+                console.error("Error retrieving total applications:", err);
+                res.status(500).json({ error: "Error retrieving total applications" });
+                return;
+            }
+            reportingData.totalApplications = row.totalApplications;
+
+            // Retrieve status counts
+            db.all(statusCountsQuery, (err, rows) => {
+                if (err) {
+                    console.error("Error retrieving application status counts:", err);
+                    res.status(500).json({ error: "Error retrieving application status counts" });
+                    return;
+                }
+                reportingData.statusCounts = rows;
+
+                // Retrieve funds usage by type
+                db.all(fundsUsageQuery, (err, rows) => {
+                    if (err) {
+                        console.error("Error retrieving funds usage data:", err);
+                        res.status(500).json({ error: "Error retrieving funds usage data" });
+                        return;
+                    }
+                    reportingData.fundsUsage = rows;
+
+                    // Send the aggregated reporting data
+                    res.json(reportingData);
+                });
+            });
+        });
+    });
+});
+
