@@ -27,8 +27,9 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/fundManagerss', (req, res) => {
-  db.all("SELECT * FROM funders where status IS NULL", (err, rows) => {
+app.get('/fundManagers', (req, res) => {
+  let status = "pending";
+  db.all(`SELECT * FROM funders where status = ${status}`, (err, rows) => {
         if (err) {
             console.error("Error retrieving profiles:", err);
             res.status(500).json({ error: "Error retrieving profiles" });
@@ -38,7 +39,7 @@ app.get('/fundManagerss', (req, res) => {
     });
 });
 
-app.get('/fundManagers', (req, res) => {
+app.get('/fundManagerss', (req, res) => {
     let status = "pending";
     const sql = `SELECT * FROM funders WHERE status = ?`;
     
