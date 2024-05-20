@@ -243,7 +243,7 @@ app.put('/update/total/amount/:id', (req, res) => {
 });
 
 app.put('/update/amount/:FundingName', (req, res) => {
-     const fundingName = req.params.id;
+     const fundingName = req.params.FundingName;
       const newValue = req.body.amount; // Assuming the new value is passed in the request body 
 
     // Run the update query
