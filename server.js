@@ -42,7 +42,7 @@ app.get('/fundManagers', (req, res) => {
     let status = "pending";
     const sql = `SELECT * FROM funders WHERE status = ?`;
     
-    db.get(sql, [status], (err, rows) => {
+    db.all(sql, [status], (err, rows) => {
         if (err) {
             console.error("Error retrieving funder information:", err);
             res.status(500).json({ error: "Error retrieving funder information" });
