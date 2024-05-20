@@ -524,6 +524,7 @@ app.get('/reporting', (req, res) => {
     const totalApplicationsQuery = `SELECT COUNT(*) AS totalApplications FROM form`;
     const statusCountsQuery = `SELECT status, COUNT(*) AS count FROM form GROUP BY status`;
     const fundsUsageQuery = `SELECT FundingType, SUM(Amount) AS amount FROM FundingOpportunity GROUP BY FundingType`;
+    const rejectedApplicationsQuery = `SELECT COUNT(*) AS rejectedApplications FROM form WHERE status = 'Rejected'`;
 
     let reportingData = {};
 
@@ -563,11 +564,22 @@ app.get('/reporting', (req, res) => {
                     }
                     reportingData.fundsUsage = rows;
 
-                    // Send the aggregated reporting data
-                    res.json(reportingData);
+                    // Retrieve count of rejected applications
+                    db.get(rejectedApplicationsQuery, (err, row) => {
+                        if (err) {
+                            console.error("Error retrieving rejected applications count:", err);
+                            res.status(500).json({ error: "Error retrieving rejected applications count" });
+                            return;
+                        }
+                        reportingData.rejectedApplications = row.rejectedApplications;
+
+                        // Send the aggregated reporting data
+                        res.json(reportingData);
+                    });
                 });
             });
         });
     });
 });
+
 
