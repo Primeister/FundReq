@@ -518,65 +518,68 @@ app.post('/notifications/add', (req, res) => {
     });
 });
 
-// Endpoint to retrieve reporting data
-app.get('/reporting', (req, res) => {
+app.get('/reporting', async (req, res) => {
     const fundsQuery = `SELECT id, FundManager FROM FundingOpportunity`;
-    const statusCountsQuery = `SELECT funding_name, status, COUNT(*) AS count FROM form WHERE funding_name IN (SELECT FundingName FROM FundingOpportunity) GROUP BY funding_name, status`;
+    const statusCountsQuery = `
+        SELECT funding_name, status, COUNT(*) AS count 
+        FROM form 
+        WHERE funding_name IN (SELECT FundingName FROM FundingOpportunity) 
+        GROUP BY funding_name, status
+    `;
 
-    let reportingData = {};
+    try {
+        const funds = await new Promise((resolve, reject) => {
+            db.all(fundsQuery, (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
 
-    // Retrieve funds managed by each fund manager
-    db.all(fundsQuery, (err, rows) => {
-        if (err) {
-            console.error("Error retrieving fund managers:", err);
-            res.status(500).json({ error: "Error retrieving fund managers" });
-            return;
-        }
-        
-        // Loop through each fund manager's funding opportunities
-        rows.forEach(row => {
+        let reportingData = {};
+
+        // Collect fund managers and initialize reporting data
+        for (let row of funds) {
             const fundManager = row.FundManager;
             const fundingOpportunityId = row.id;
 
-            // Initialize reporting data for the current fund manager
-            reportingData[fundManager] = {
-                totalApplications: 0,
-                statusCounts: {}
-            };
+            if (!reportingData[fundManager]) {
+                reportingData[fundManager] = {
+                    totalApplications: 0,
+                    statusCounts: {}
+                };
+            }
 
-            // Retrieve total applications for each funding opportunity
+            // Retrieve total applications for the current funding opportunity
             const totalApplicationsQuery = `SELECT COUNT(*) AS count FROM form WHERE funding_name = ?`;
-            db.get(totalApplicationsQuery, [fundingOpportunityId], (err, row) => {
-                if (err) {
-                    console.error("Error retrieving total applications:", err);
-                    res.status(500).json({ error: "Error retrieving total applications" });
-                    return;
-                }
-                reportingData[fundManager].totalApplications = row.count;
+            const totalApplications = await new Promise((resolve, reject) => {
+                db.get(totalApplicationsQuery, [fundingOpportunityId], (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row.count);
+                });
             });
 
-            // Retrieve status counts for each funding opportunity
-            db.all(statusCountsQuery, (err, rows) => {
-                if (err) {
-                    console.error("Error retrieving status counts:", err);
-                    res.status(500).json({ error: "Error retrieving status counts" });
-                    return;
-                }
-                rows.forEach(statusRow => {
-                    if (!reportingData[fundManager].statusCounts[statusRow.status]) {
-                        reportingData[fundManager].statusCounts[statusRow.status] = 0;
-                    }
-                    reportingData[fundManager].statusCounts[statusRow.status] += statusRow.count;
-                });
+            reportingData[fundManager].totalApplications += totalApplications;
+        }
 
-                // If this is the last funding opportunity for this fund manager, send the aggregated data
-                if (Object.keys(reportingData).length === rows.length) {
-                    res.json(reportingData);
-                }
+        // Retrieve status counts for all funding opportunities
+        const statusCounts = await new Promise((resolve, reject) => {
+            db.all(statusCountsQuery, (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
             });
         });
-    });
+
+        for (let row of statusCounts) {
+            const fundManager = funds.find(f => f.id === row.funding_name).FundManager;
+            if (!reportingData[fundManager].statusCounts[row.status]) {
+                reportingData[fundManager].statusCounts[row.status] = 0;
+            }
+            reportingData[fundManager].statusCounts[row.status] += row.count;
+        }
+
+        res.json(reportingData);
+    } catch (err) {
+        console.error("Error retrieving reporting data:", err);
+        res.status(500).json({ error: "Error retrieving reporting data" });
+    }
 });
-
-
-
