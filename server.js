@@ -518,68 +518,63 @@ app.post('/notifications/add', (req, res) => {
     });
 });
 
-app.get('/reporting', async (req, res) => {
-    const fundsQuery = `SELECT id, FundManager FROM FundingOpportunity`;
-    const statusCountsQuery = `
-        SELECT funding_name, status, COUNT(*) AS count 
-        FROM form 
-        WHERE funding_name IN (SELECT FundingName FROM FundingOpportunity) 
-        GROUP BY funding_name, status
-    `;
+// New route to generate reports for a specific fund manager
+app.get('/reporting/:FundManager', (req, res) => {
+    const fundManager = req.params.FundManager;
 
-    try {
-        const funds = await new Promise((resolve, reject) => {
-            db.all(fundsQuery, (err, rows) => {
-                if (err) reject(err);
-                else resolve(rows);
-            });
-        });
+    const sqlFundingOpportunities = `SELECT * FROM FundingOpportunity WHERE FundManager = ?`;
+    const sqlApplications = `SELECT * FROM form WHERE funding_name IN (SELECT FundingName FROM FundingOpportunity WHERE FundManager = ?)`;
 
-        let reportingData = {};
-
-        // Collect fund managers and initialize reporting data
-        for (let row of funds) {
-            const fundManager = row.FundManager;
-            const fundingOpportunityId = row.id;
-
-            if (!reportingData[fundManager]) {
-                reportingData[fundManager] = {
-                    totalApplications: 0,
-                    statusCounts: {}
-                };
-            }
-
-            // Retrieve total applications for the current funding opportunity
-            const totalApplicationsQuery = `SELECT COUNT(*) AS count FROM form WHERE funding_name = ?`;
-            const totalApplications = await new Promise((resolve, reject) => {
-                db.get(totalApplicationsQuery, [fundingOpportunityId], (err, row) => {
-                    if (err) reject(err);
-                    else resolve(row.count);
-                });
-            });
-
-            reportingData[fundManager].totalApplications += totalApplications;
+    db.all(sqlFundingOpportunities, [fundManager], (err, fundingRows) => {
+        if (err) {
+            console.error("Error retrieving funding opportunities:", err);
+            return res.status(500).json({ error: "Error retrieving funding opportunities" });
         }
 
-        // Retrieve status counts for all funding opportunities
-        const statusCounts = await new Promise((resolve, reject) => {
-            db.all(statusCountsQuery, (err, rows) => {
-                if (err) reject(err);
-                else resolve(rows);
-            });
-        });
-
-        for (let row of statusCounts) {
-            const fundManager = funds.find(f => f.id === row.funding_name).FundManager;
-            if (!reportingData[fundManager].statusCounts[row.status]) {
-                reportingData[fundManager].statusCounts[row.status] = 0;
+        db.all(sqlApplications, [fundManager], (err, applicationRows) => {
+            if (err) {
+                console.error("Error retrieving applications:", err);
+                return res.status(500).json({ error: "Error retrieving applications" });
             }
-            reportingData[fundManager].statusCounts[row.status] += row.count;
-        }
 
-        res.json(reportingData);
-    } catch (err) {
-        console.error("Error retrieving reporting data:", err);
-        res.status(500).json({ error: "Error retrieving reporting data" });
-    }
+            const chartsData = generateChartsData(fundingRows, applicationRows);
+            res.json(chartsData);
+        });
+    });
 });
+
+// Helper function to generate the charts data
+function generateChartsData(fundingRows, applicationRows) {
+    const chartsData = {};
+
+    // Chart data for each funding opportunity
+    chartsData.fundingOpportunities = fundingRows.map(funding => {
+        const fundingName = funding.FundingName;
+        const statuses = applicationRows
+            .filter(app => app.funding_name === fundingName)
+            .reduce((acc, app) => {
+                acc[app.status] = (acc[app.status] || 0) + 1;
+                return acc;
+            }, {});
+
+        return {
+            fundingName,
+            statuses
+        };
+    });
+
+    // Overall chart data grouped by status
+    chartsData.overallStatus = applicationRows.reduce((acc, app) => {
+        acc[app.status] = (acc[app.status] || 0) + 1;
+        return acc;
+    }, {});
+
+    // Chart data grouped by funding opportunity name
+    chartsData.byFundingOpportunity = fundingRows.reduce((acc, funding) => {
+        const fundingName = funding.FundingName;
+        acc[fundingName] = (acc[fundingName] || 0) + 1;
+        return acc;
+    }, {});
+
+    return chartsData;
+}
