@@ -3,6 +3,7 @@ const sqlite3 = require("sqlite3");
 const path = require("path");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const { request } = require("http");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const dbPath = path.resolve(__dirname, "database.db");
@@ -111,21 +112,13 @@ app.post("/application/post", (req, res) => {
     dob,
     citizenship,
     funding_name,
+    requested_amount
   } = req.body;
-  const values = [
-    surname,
-    firstname,
-    mobile,
-    email,
-    id_number,
-    dob,
-    citizenship,
-    status,
-    funding_name,
-  ];
+  const values = [surname, firstname, mobile, email, id_number, dob, citizenship, status, funding_name, requested_amount];
+
 
   // Run the update query
-  const sql = `INSERT INTO form (surname , firstName, mobile, email, id_number, dob, citizenship , status , funding_name) VALUES (?, ?, ?, ?, ?, ?, ? ,? , ?)`;
+  const sql = `INSERT INTO form (surname , firstName, mobile, email, id_number, dob, citizenship , status , funding_name, requested_amount) VALUES (?, ?, ?, ?, ?, ?, ? ,? , ?, ?)`;
   db.run(sql, values, function (err) {
     if (err) {
       console.error("Error inserting data into database:", err);
