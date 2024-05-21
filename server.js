@@ -517,3 +517,71 @@ app.post('/notifications/add', (req, res) => {
         }
     });
 });
+
+app.get('/report/:fundManager', (req, res) => {
+    const fundManager = req.params.fundManager;
+
+    // SQL query to retrieve funding opportunities managed by the specified fund manager
+    const fundingOpportunitiesQuery = `SELECT FundingName FROM FundingOpportunity WHERE FundManager = ?`;
+
+    db.all(fundingOpportunitiesQuery, [fundManager], (err, fundingOpportunities) => {
+        if (err) {
+            console.error("Error retrieving funding opportunities:", err);
+            res.status(500).json({ error: "Error retrieving funding opportunities" });
+            return;
+        }
+
+        if (fundingOpportunities.length === 0) {
+            res.status(404).json({ message: "No funding opportunities found for this fund manager" });
+            return;
+        }
+
+        // Array to hold the final report data
+        const reportData = [];
+
+        // Function to process each funding opportunity and count applicants by status
+        const processFundingOpportunity = (index) => {
+            if (index >= fundingOpportunities.length) {
+                // If all funding opportunities have been processed, send the report
+                res.json(reportData);
+                return;
+            }
+
+            const fundingName = fundingOpportunities[index].FundingName;
+            const countQuery = `
+                SELECT 
+                    status, 
+                    COUNT(*) AS count 
+                FROM form 
+                WHERE funding_name = ? 
+                GROUP BY status
+            `;
+
+            db.all(countQuery, [fundingName], (err, counts) => {
+                if (err) {
+                    console.error("Error counting applicants by status:", err);
+                    res.status(500).json({ error: "Error counting applicants by status" });
+                    return;
+                }
+
+                // Format the count data
+                const countData = {
+                    fundingName: fundingName,
+                    counts: counts.reduce((acc, row) => {
+                        acc[row.status] = row.count;
+                        return acc;
+                    }, { processing: 0, approved: 0, rejected: 0 }) // Initialize with 0 counts
+                };
+
+                reportData.push(countData);
+
+                // Process the next funding opportunity
+                processFundingOpportunity(index + 1);
+            });
+        };
+
+        // Start processing the first funding opportunity
+        processFundingOpportunity(0);
+    });
+});
+
