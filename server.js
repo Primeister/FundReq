@@ -585,3 +585,19 @@ app.get('/report/:fundManager', (req, res) => {
     });
 });
 
+//route to fetch application status of an applicant
+app.get('/applications/status/:applicant_email', (req, res) => {
+    const email = req.params.applicant_email;
+    console.log("Fetching status for email: ${email}");
+    
+    const sql = 'SELECT * FROM form WHERE email = ?';
+    db.all(sql, [email], (err, rows) => {
+        if (err) {
+            console.error("Error retrieving application status:", err);
+            res.status(500).json({ error: "Error retrieving application status" });
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
