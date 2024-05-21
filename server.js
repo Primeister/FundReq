@@ -570,7 +570,7 @@ app.get('/report/:fundManager', (req, res) => {
                     counts: counts.reduce((acc, row) => {
                         acc[row.status] = row.count;
                         return acc;
-                    }, { processing: 0, approved: 0, rejected: 0 }) // Initialize with 0 counts
+                    }, { processing: 0, rejected: 0 }) // Initialize with 0 counts
                 };
 
                 reportData.push(countData);
