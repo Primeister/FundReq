@@ -38,6 +38,18 @@ app.get("/categories", (req, res) => {
   });
 });
 
+app.get("/categories/:fundingName", (req, res) => {
+  const fundingName = req.params.fundingName;
+  db.all(`SELECT * FROM Category where fundingName = ?`, [fundingName], (err, rows) => {
+    if (err) {
+      console.error("Error retrieving categories:", err);
+      res.status(500).json({ error: "Error retrieving categories" });
+    } else {
+      res.json(rows);
+    }
+  });
+});
+
 app.get("/fundManagers", (req, res) => {
   let status = "pending";
   db.all(`SELECT * FROM funders where status = ?`, [status], (err, rows) => {
@@ -50,21 +62,6 @@ app.get("/fundManagers", (req, res) => {
   });
 });
 
-app.get("/fundManagerss", (req, res) => {
-  let status = "pending";
-  const sql = `SELECT * FROM funders WHERE status = ?`;
-
-  db.all(sql, [status], (err, rows) => {
-    if (err) {
-      console.error("Error retrieving funder information:", err);
-      res.status(500).json({ error: "Error retrieving funder information" });
-    } else if (!rows) {
-      res.status(404).json({ error: "Funders not found" });
-    } else {
-      res.json(rows);
-    }
-  });
-});
 
 app.get("/fundManagers/:id", (req, res) => {
   const id = req.params.id;
@@ -317,7 +314,7 @@ app.put("/update/amount/:FundingName", (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     res.json({
-      message: "Fieldd updated successfully",
+      message: "Field updated successfully",
       changes: this.changes, // Number of rows affected
     });
   });
