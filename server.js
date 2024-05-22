@@ -608,51 +608,22 @@ app.get("/notifications/:fundManagerEmail", (req, res) => {
 
 // Endpoint to add a new notification
 app.post("/notifications/add", (req, res) => {
-  const { fundManagerEmail, fundOppName, applicantName, status = 'unread', starred = false } = req.body;
+  const { fundManagerEmail, fundOppName, applicantName } = req.body;
 
-  const notificationValues = [fundManagerEmail, fundOppName, applicantName, status, starred];
+  const notificationValues = [fundManagerEmail, fundOppName, applicantName];
 
-  const sqlNotification = `INSERT INTO Notifications (fundManagerEmail, fundOppName, applicantName, status, starred) VALUES (?, ?, ?, ?, ?)`;
+  const sqlNotification = `INSERT INTO Notifications (fundManagerEmail, fundOppName, applicantName) VALUES (?, ?, ?)`;
   db.run(sqlNotification, notificationValues, function (err) {
     if (err) {
       console.error("Error inserting notification into database:", err);
-      res.status(500).json({ error: "Error inserting notification into database" });
+      res
+        .status(500)
+        .json({ error: "Error inserting notification into database" });
     } else {
       res.status(201).json({ message: "Notification added successfully" });
     }
   });
 });
-
-app.put("/notifications/:id/status", (req, res) => {
-  const notificationId = req.params.id;
-  const { status } = req.body;
-
-  const sqlUpdateStatus = `UPDATE Notifications SET status = ? WHERE id = ?`;
-  db.run(sqlUpdateStatus, [status, notificationId], function (err) {
-    if (err) {
-      console.error("Error updating notification status:", err);
-      res.status(500).json({ error: "Error updating notification status" });
-    } else {
-      res.status(200).json({ message: "Notification status updated successfully" });
-    }
-  });
-});
-
-app.put("/notifications/:id/star", (req, res) => {
-  const notificationId = req.params.id;
-  const { starred } = req.body;
-
-  const sqlUpdateStar = `UPDATE Notifications SET starred = ? WHERE id = ?`;
-  db.run(sqlUpdateStar, [starred, notificationId], function (err) {
-    if (err) {
-      console.error("Error updating notification star status:", err);
-      res.status(500).json({ error: "Error updating notification star status" });
-    } else {
-      res.status(200).json({ message: "Notification star status updated successfully" });
-    }
-  });
-});
-
 
 app.get("/report/:fundManager", (req, res) => {
   const fundManager = req.params.fundManager;
