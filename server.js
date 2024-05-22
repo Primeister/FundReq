@@ -317,7 +317,7 @@ app.put("/update/amount/:FundingName", (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     res.json({
-      message: "Field updated successfully",
+      message: "Fieldd updated successfully",
       changes: this.changes, // Number of rows affected
     });
   });
