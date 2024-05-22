@@ -608,17 +608,15 @@ app.get("/notifications/:fundManagerEmail", (req, res) => {
 
 // Endpoint to add a new notification
 app.post("/notifications/add", (req, res) => {
-  const { fundManagerEmail, fundOppName, applicantName } = req.body;
+  const { fundManagerEmail, fundOppName, applicantName, status = 'unread', starred = false } = req.body;
 
-  const notificationValues = [fundManagerEmail, fundOppName, applicantName];
+  const notificationValues = [fundManagerEmail, fundOppName, applicantName, status, starred];
 
-  const sqlNotification = `INSERT INTO Notifications (fundManagerEmail, fundOppName, applicantName) VALUES (?, ?, ?)`;
+  const sqlNotification = `INSERT INTO Notifications (fundManagerEmail, fundOppName, applicantName, status, starred) VALUES (?, ?, ?, ?, ?)`;
   db.run(sqlNotification, notificationValues, function (err) {
     if (err) {
       console.error("Error inserting notification into database:", err);
-      res
-        .status(500)
-        .json({ error: "Error inserting notification into database" });
+      res.status(500).json({ error: "Error inserting notification into database" });
     } else {
       res.status(201).json({ message: "Notification added successfully" });
     }
