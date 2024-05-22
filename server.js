@@ -437,20 +437,45 @@ app.get("/applications/:funding_name", (req, res) => {
   });
 });
 
-app.get("/applications/:funding_name/:applicant_email/accept", (req, res) => {
+app.post("/applications/:funding_name/:applicant_email/accept", (req, res) => {
   const fundingOppName = req.params.funding_name;
   const applicantEmail = req.params.applicant_email;
+  const { requested_amount } = req.body;
 
-  const sql = `UPDATE form SET status="Approved" WHERE funding_name=? AND email=?`;
-  //execute the sql query
-  db.all(sql, [fundingOppName, applicantEmail], (err, rows) => {
+  const fetchBudget = `SELECT Amount FROM FundingOpportunity WHERE FundingName =?`;
+
+  db.all(fetchBudget, [fundingOppName], (err, rows) => {
     if (err) {
-      console.error("Error retrieving applications for funding opportunity");
-      res.status(500).json({ error: "Error retrieving data" });
-    } else {
-      //if data found, send the response
-      res.json(rows);
-      console.log("accepted");
+      console.error("Error retrieving budget for funding opportunity");
+      res.status(500).json({ error: "Error retrieving budget" });
+    }
+    else{
+      const budget = rows[0].Amount;
+      if (requested_amount > budget) {
+        res.status(400).json({ error: "Applicant amount exceeds budget" });
+      }
+      else{
+        const sql = `UPDATE form SET status="Approved" WHERE funding_name=? AND email=?`;
+        //execute the sql query
+        db.all(sql, [fundingOppName, applicantEmail], (err, rows) => {
+          if (err) {
+            console.error("Error retrieving applications for funding opportunity");
+            res.status(500).json({ error: "Error retrieving data" });
+          } else {
+            //if data found, send the response
+            db.all("UPDATE FundingOpportunity SET Amount = Amount -? WHERE FundingName =?", [requested_amount, fundingOppName], (err, rows) => {
+              if (err) {
+                console.error("Error retrieving applications for funding opportunity");
+                res.status(500).json({ error: "Error retrieving data" });
+              } else {
+                //if data found, send the response
+                res.json(rows);
+                console.log("accepted");
+              }
+            });
+          }
+        });
+      }
     }
   });
 });
