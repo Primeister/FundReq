@@ -312,6 +312,22 @@ app.put("/update/amount/:FundingName", (req, res) => {
   });
 });
 
+app.put("/update/applicant/amount/:FundingName", (req, res) => {
+  const fundingName = req.params.FundingName;
+  const newValue = req.body.applicantAmount; // Assuming the new value is passed in the request body // Run the update query
+
+  const sql = `UPDATE FundingOpportunity SET ApplicantAmount = ? WHERE FundingName = ?`;
+  db.run(sql, [newValue, fundingName], function (err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({
+      message: "Field updated successfully",
+      changes: this.changes, // Number of rows affected
+    });
+  });
+});
+
 // Route to retrieve funder information by email
 app.get("/funder/:email", (req, res) => {
   const email = req.params.email;
