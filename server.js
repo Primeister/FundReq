@@ -70,6 +70,26 @@ app.get("/fundManagers/:id", (req, res) => {
   });
 });
 
+
+app.post("/category", (req, res) => {
+  
+  let { category, fundingName } = req.body;
+  const values = [category, fundingName];
+
+  // Run the update query
+  const sql = `INSERT INTO Category (category, fundingName) VALUES (?, ?)`;
+  db.run(sql, values, function (err) {
+    if (err) {
+      console.error("Error posting category:", err);
+      res.status(500).json({ error: "Error posting category" });
+    } else {
+      res
+        .status(201)
+        .json({ message: "category posted successfully" });
+    }
+  });
+});
+
 app.post("/fundManagers/advert/post/:id", (req, res) => {
   const id = req.params.id;
   let { name, type, description, requirements, deadline, amount } = req.body;
