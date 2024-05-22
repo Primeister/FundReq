@@ -27,6 +27,17 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/categories", (req, res) => {
+  db.all("SELECT * FROM Category", (err, rows) => {
+    if (err) {
+      console.error("Error retrieving profiles:", err);
+      res.status(500).json({ error: "Error retrieving profiles" });
+    } else {
+      res.json(rows);
+    }
+  });
+});
+
 app.get("/fundManagers", (req, res) => {
   let status = "pending";
   db.all(`SELECT * FROM funders where status = ?`, [status], (err, rows) => {
