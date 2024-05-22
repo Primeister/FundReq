@@ -320,6 +320,22 @@ app.put("/update/amount/:FundingName", (req, res) => {
   });
 });
 
+app.delete("/delete/category", (req, res) => {
+  
+  const category = req.body.category; // Assuming the new value is passed in the request body // Run the update query
+
+  const sql = `DELETE FROM Category WHERE category = ?`;
+  db.run(sql, [category], function (err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({
+      message: "Field updated successfully",
+      changes: this.changes, // Number of rows affected
+    });
+  });
+});
+
 app.put("/update/applicant/amount/:FundingName", (req, res) => {
   const fundingName = req.params.FundingName;
   const newValue = req.body.applicantAmount; // Assuming the new value is passed in the request body // Run the update query
