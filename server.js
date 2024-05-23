@@ -62,6 +62,30 @@ app.get("/fundManagers", (req, res) => {
   });
 });
 
+app.get("/fundManagers/approved", (req, res) => {
+  let permission = "allowed";
+  db.all(`SELECT * FROM funders where permission = ?`, [permission], (err, rows) => {
+    if (err) {
+      console.error("Error retrieving profiles:", err);
+      res.status(500).json({ error: "Error retrieving profiles" });
+    } else {
+      res.json(rows);
+    }
+  });
+});
+
+app.get("/applicants", (req, res) => {
+  
+  db.all("SELECT * FROM applicants",  (err, rows) => {
+    if (err) {
+      console.error("Error retrieving profiles:", err);
+      res.status(500).json({ error: "Error retrieving profiles" });
+    } else {
+      res.json(rows);
+    }
+  });
+});
+
 
 app.get("/fundManagers/:id", (req, res) => {
   const id = req.params.id;
