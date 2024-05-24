@@ -63,8 +63,8 @@ app.get("/fundManagers", (req, res) => {
 });
 
 app.get("/fundManagers/approved", (req, res) => {
-  let status = "approved";
-  db.all(`SELECT * FROM funders where status = ?`, [status], (err, rows) => {
+  let permission = "allowed";
+  db.all(`SELECT * FROM funders where permission = ?`, [permission], (err, rows) => {
     if (err) {
       console.error("Error retrieving profiles:", err);
       res.status(500).json({ error: "Error retrieving profiles" });
@@ -164,13 +164,16 @@ app.post("/application/post", (req, res) => {
     dob,
     citizenship,
     funding_name,
-    requested_amount
+    requested_amount ,
+    address ,
+    info ,
+    motivation
   } = req.body;
-  const values = [surname, firstname, mobile, email, id_number, dob, citizenship, status, funding_name, requested_amount];
+  const values = [surname, firstname, mobile, email, id_number, dob, citizenship, status, funding_name, requested_amount, address, info, motivation];
 
 
   // Run the update query
-  const sql = `INSERT INTO form (surname , firstName, mobile, email, id_number, dob, citizenship , status , funding_name, requested_amount) VALUES (?, ?, ?, ?, ?, ?, ? ,? , ?, ?)`;
+  const sql = `INSERT INTO form (surname , firstName, mobile, email, id_number, dob, citizenship , status , funding_name, requested_amount, address, info, motivation) VALUES (?, ? , ? , ? , ?, ?, ?, ?, ?, ? ,? , ?, ?)`;
   db.run(sql, values, function (err) {
     if (err) {
       console.error("Error inserting data into database:", err);
