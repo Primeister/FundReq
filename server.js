@@ -671,7 +671,7 @@ app.post("/notifications/add", (req, res) => {
 
   const notificationValues = [fundManagerEmail, fundOppName, applicantName];
 
-  const sqlNotification = `INSERT INTO Notifications (fundManagerEmail, fundOppName, applicantName) VALUES (?, ?, ?)`;
+  const sqlNotification = `INSERT INTO Notifications (fundManagerEmail, fundOppName, applicantName, status) VALUES (?, ?, ?, 0)`;
   db.run(sqlNotification, notificationValues, function (err) {
     if (err) {
       console.error("Error inserting notification into database:", err);
@@ -683,6 +683,25 @@ app.post("/notifications/add", (req, res) => {
     }
   });
 });
+
+app.post("/notifications/update", (req, res) => {
+  const { fundManagerEmail, fundOppName, applicantName } = req.body;
+
+  const notificationValues = [fundManagerEmail, fundOppName, applicantName];
+
+  const sqlNotification = `UPDATE Notifications SET status = 1 WHERE fundManagerEmail = ? AND fundOppName = ? AND applicantName = ?`;
+  db.run(sqlNotification, notificationValues, function (err) {
+    if (err) {
+      console.error("Error updating notification status in the database:", err);
+      res
+        .status(500)
+        .json({ error: "Error updating notification status" });
+    } else {
+      res.status(200).json({ message: "Notification updated successfully" });
+    }
+  });
+});
+
 
 app.get("/report/:fundManager", (req, res) => {
   const fundManager = req.params.fundManager;
