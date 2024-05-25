@@ -63,8 +63,8 @@ app.get("/fundManagers", (req, res) => {
 });
 
 app.get("/fundManagers/approved", (req, res) => {
-  let permission = "allowed";
-  db.all(`SELECT * FROM funders where permission = ?`, [permission], (err, rows) => {
+  let status = "approved";
+  db.all(`SELECT * FROM funders where status = ?`, [status], (err, rows) => {
     if (err) {
       console.error("Error retrieving profiles:", err);
       res.status(500).json({ error: "Error retrieving profiles" });
