@@ -102,6 +102,21 @@ app.get("/fundManagers/:id", (req, res) => {
   });
 });
 
+app.get("/applicants/:id", (req, res) => {
+  const id = req.params.id;
+  // Assuming the new value is passed in the request body
+
+  // Run the update query
+  const sql = `SELECT * FROM applicants WHERE email = ?`;
+  db.get(sql, [id], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    } else {
+      res.json(rows);
+    }
+  });
+});
+
 
 app.post("/category", (req, res) => {
   
